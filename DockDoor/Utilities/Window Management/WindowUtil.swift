@@ -321,16 +321,16 @@ enum WindowUtil {
                 return
             }
             let appElement = AXUIElementCreateApplication(app.processIdentifier)
-            if let windows = try? appElement.windows() {
-                for window in windows {
-                    if let cgWindowId = try? window.cgWindowId(), let index = windowSet.firstIndex(where: { $0.id == cgWindowId }) {
-                        var updatedWindow = windowSet[index]
-                        updatedWindow.date = Date()
-                        windowSet.remove(at: index)
-                        windowSet.insert(updatedWindow)
-                        return
-                    }
+            if let window = try? appElement.focusedWindow() {
+//                for window in windows {
+                if let cgWindowId = try? window.cgWindowId(), let index = windowSet.firstIndex(where: { $0.id == cgWindowId }) {
+                    var updatedWindow = windowSet[index]
+                    updatedWindow.date = Date()
+                    windowSet.remove(at: index)
+                    windowSet.insert(updatedWindow)
+                    return
                 }
+//                }
             }
         }
     }

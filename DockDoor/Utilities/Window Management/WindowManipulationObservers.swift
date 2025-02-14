@@ -76,7 +76,7 @@ class WindowManipulationObservers {
             return
         }
 
-//        WindowUtil.updateWindowDateTime(for: app)
+        WindowUtil.updateWindowDateTime(for: app)
     }
 
     @objc private func activeSpaceDidChange(_ notification: Notification) {
@@ -177,7 +177,9 @@ private func handleWindowEvent(element: AXUIElement, app: NSRunningApplication, 
 
     let workItem = DispatchWorkItem {
         if updateDateTime {
-//            WindowUtil.updateWindowDateTime(for: app)
+//            if let id = try? element.cgWindowId() {
+            WindowUtil.updateWindowDateTime(for: app)
+//            }
         }
         WindowUtil.updateWindowCache(for: app) { windowSet in
             windowSet = windowSet.filter { WindowUtil.isValidElement($0.axElement) }
