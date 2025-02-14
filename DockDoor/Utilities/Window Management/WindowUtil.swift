@@ -17,6 +17,7 @@ struct WindowInfo: Identifiable, Hashable {
     var isMinimized: Bool
     var isHidden: Bool
     var date: Date
+    var creation_date: Date
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -207,7 +208,7 @@ enum WindowUtil {
                 try windowInfo.axElement.setAttribute(kAXMinimizedAttribute, false)
                 windowInfo.app.activate()
                 bringWindowToFront(windowInfo: windowInfo)
-                updateWindowDateTime(windowInfo)
+//                updateWindowDateTime(windowInfo)
                 return false // Successfully un-minimized
             } catch {
                 print("Error un-minimizing window")
@@ -216,7 +217,7 @@ enum WindowUtil {
         } else {
             do {
                 try windowInfo.axElement.setAttribute(kAXMinimizedAttribute, true)
-                updateWindowDateTime(windowInfo)
+//                updateWindowDateTime(windowInfo)
                 return true // Successfully minimized
             } catch {
                 print("Error minimizing window")
@@ -234,7 +235,7 @@ enum WindowUtil {
                 windowInfo.app.activate()
                 bringWindowToFront(windowInfo: windowInfo)
             }
-            updateWindowDateTime(windowInfo)
+//            updateWindowDateTime(windowInfo)
             return newHiddenState // Successfully toggled hidden state
         } catch {
             print("Error toggling hidden state of application")
@@ -435,7 +436,7 @@ enum WindowUtil {
 
             // Get final window list with all updates
             let finalWindows = await WindowUtil.purifyAppCache(with: app.processIdentifier, removeAll: false) ?? []
-            return finalWindows.sorted(by: { $0.date > $1.date })
+            return finalWindows.sorted(by: { $0.creation_date > $1.creation_date })
         }
 
         return []
@@ -576,6 +577,18 @@ enum WindowUtil {
         guard let windowRef = findWindow(matchingWindow: window, in: axWindows) else {
             return
         }
+        var creationValue: CFTypeRef?
+        let status = AXUIElementCopyAttributeValue(
+            windowRef,
+            "AXCreationTime" as CFString, // private attribute
+            &creationValue
+        )
+
+        let creationDate: Date = if status == .success, let date = creationValue as? Date {
+            date
+        } else {
+            Date.now
+        }
 
         let closeButton = try? windowRef.closeButton()
 
@@ -589,7 +602,8 @@ enum WindowUtil {
                                     closeButton: closeButton,
                                     isMinimized: false,
                                     isHidden: false,
-                                    date: Date.now)
+                                    date: Date.now,
+                                    creation_date: creationDate)
 
         do {
             windowInfo.image = try await captureWindowImage(window: window)
@@ -609,7 +623,7 @@ enum WindowUtil {
                 matchingWindowCopy.isMinimized = windowInfo.isMinimized
 
                 if !preventDateUpdate, Defaults[.sortWindowsByDate] {
-                    matchingWindowCopy.date = windowInfo.date
+//                    matchingWindowCopy.date = windowInfo.date
                 }
 
                 windowSet.remove(matchingWindow)

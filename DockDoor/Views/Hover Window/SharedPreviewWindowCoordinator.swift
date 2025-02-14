@@ -336,6 +336,7 @@ final class SharedPreviewWindowCoordinator: NSWindow {
                 self.appName = appName
                 self.windows = windows
                 self.onWindowTap = onWindowTap
+                windowSwitcherCoordinator.setIndex(to: 1 % windows.count)
 
                 updateHostingView(appName: appName, windows: windows, onWindowTap: onWindowTap, screen: screen, mouseLocation: mouseLocation)
 
